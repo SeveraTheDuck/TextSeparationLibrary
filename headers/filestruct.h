@@ -1,5 +1,5 @@
-#ifndef __PARRAY_H__
-#define __PARRAY_H__
+#ifndef __FILESTRUCT_H__
+#define __FILESTRUCT_H__
 
 #include <stdio.h>
 #include <assert.h>
@@ -10,12 +10,18 @@ enum partition
     PARTED     = 1,
 };
 
+struct line_struct
+{
+    char* line = NULL;
+    size_t number_of_elements = 0;
+};
+
 struct file_input
 {
     char* buffer;
     size_t buffer_size;
     size_t number_of_lines;
-    char** strings_array = NULL;
+    struct line_struct* lines_array = NULL;
 };
 
 size_t GetFileSize(FILE* fp);

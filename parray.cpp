@@ -1,57 +1,13 @@
-#include "parray.h"
+#include "filestruct.h"
 
-// вопросы:
-// вывод русских символов (не строк)
-// выравнивание при приведении типов (char* -> size_t*, 1 -> 8)
-//
-
-// сделать:
-// структуры
-// пропускать знаки препинания (а пустые строки?)
-// вынести компаратор
-// подсчёт вхождений символа в буфере
-//
-
-// void PrintParray(char** pointer_array, size_t number_of_lines)
-// {
-//     for (size_t i = 0; i < number_of_lines; ++i)
-//     {
-//         printf("%s\n", pointer_array[i]);
-//     }
-//     return;
-// }
-//
-// void MySwap(char** str1, char** str2)
-// {
-//     char* temp_str = *str1;
-//     *str1 = *str2;
-//     *str2 = temp_str;
-//     return;
-// }
-//
-// void SortStringsArray(char** pointer_array, size_t number_of_lines)
-// {
-//     int cmp_status = 0;
-//     for (size_t i = 0; i < number_of_lines; ++i)
-//     {
-//         for (size_t j = 0; j < number_of_lines - i - 1; ++j)
-//         {
-//             cmp_status = strcmp(pointer_array[j], pointer_array[j + 1]);
-//             if (cmp_status > 0) MySwap(&pointer_array[j], &pointer_array[j + 1]);
-//         }
-//     }
-//     for (size_t i = 0; i < number_of_lines; ++i)
-//     {
-//         FILE* fp = fopen("sorted.txt", "a"); //?
-//         assert(fp);
-//
-//         //fputs(pointer_array[i], fp);
-//         fprintf(fp, "%s\n", pointer_array[i]);
-//
-//         fclose(fp);
-//     }
-//     return;
-// }
+void PrintParray(char** pointer_array, size_t number_of_lines)
+{
+    for (size_t i = 0; i < number_of_lines; ++i)
+    {
+        printf("%s\n", pointer_array[i]);
+    }
+    return;
+}
 
 size_t GetFileSize(FILE* fp)
 {
@@ -112,23 +68,27 @@ void GetNumberOfLines(struct file_input* buffer_info)
 
 void MakeArrayOfStrings(struct file_input* buffer_info)
 {
-    buffer_info->strings_array = (char**)calloc(buffer_info->number_of_lines, sizeof(char*));
-    assert(buffer_info->strings_array);
+    buffer_info->lines_array = (line_struct*)calloc(buffer_info->number_of_lines, sizeof(line_struct));
+    assert(buffer_info->lines_array);
 
     size_t current_line = 0;
-    buffer_info->strings_array[current_line++] = buffer_info->buffer;
+    buffer_info->lines_array[current_line++].line = buffer_info->buffer;
 
     for (size_t buffer_index = 0; buffer_index < buffer_info->buffer_size; ++buffer_index)
     {
+        ++(buffer_info->lines_array[current_line - 1].number_of_elements);
         if (buffer_info->buffer[buffer_index] == '\n')
         {
             buffer_info->buffer[buffer_index] =  '\0';
             if (current_line < buffer_info->number_of_lines)
             {
-                buffer_info->strings_array[current_line++] = buffer_info->buffer + buffer_index + 1;
+                --(buffer_info->lines_array[current_line - 1].number_of_elements);
+                buffer_info->lines_array[current_line++].line = buffer_info->buffer + buffer_index + 1;
             }
         }
     }
+
+    --(buffer_info->lines_array[buffer_info->number_of_lines - 1].number_of_elements);
 
     return;
 }
@@ -138,11 +98,13 @@ void FreeFileInput(struct file_input* buffer_info)
     free(buffer_info->buffer);
     buffer_info->buffer = NULL;
 
-    if (buffer_info->strings_array)
+    if (buffer_info->lines_array)
     {
-        free(buffer_info->strings_array);
-        buffer_info->strings_array = NULL;
+        free(buffer_info->lines_array);
+        buffer_info->lines_array = NULL;
     }
+
+    buffer_info = NULL;
 
     return;
 }
