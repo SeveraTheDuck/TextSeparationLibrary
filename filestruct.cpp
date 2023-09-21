@@ -2,8 +2,11 @@
 
 void PrintParray(char** pointer_array, size_t number_of_lines)
 {
+    assert(pointer_array);
+
     for (size_t i = 0; i < number_of_lines; ++i)
     {
+        assert(i >= number_of_lines);
         printf("%s\n", pointer_array[i]);
     }
     return;
@@ -30,6 +33,8 @@ char* MakeBuffer(size_t buffer_size)
 
 void ReadFileToBuffer(const char* file_name, struct file_input* buffer_info)
 {
+    assert(buffer_info);
+
     FILE* fp = fopen(file_name, "rb");
     assert(fp);
 
@@ -46,6 +51,7 @@ void ReadFileToBuffer(const char* file_name, struct file_input* buffer_info)
 
 void GetNumberOfLines(struct file_input* buffer_info)
 {
+    assert(buffer_info);
     assert(buffer_info->buffer);
 
     buffer_info->number_of_lines = 0;
@@ -68,6 +74,9 @@ void GetNumberOfLines(struct file_input* buffer_info)
 
 void MakeArrayOfStrings(struct file_input* buffer_info)
 {
+    assert(buffer_info);
+    assert(buffer_info->buffer);
+
     buffer_info->lines_array = (line_struct*)calloc(buffer_info->number_of_lines, sizeof(line_struct));
     assert(buffer_info->lines_array);
 
@@ -92,14 +101,15 @@ void MakeArrayOfStrings(struct file_input* buffer_info)
 
 void FreeFileInput(struct file_input* buffer_info)
 {
-    free(buffer_info->buffer);
+    assert(buffer_info);
+
+    if (buffer_info->buffer)
+        free(buffer_info->buffer);
     buffer_info->buffer = NULL;
 
     if (buffer_info->lines_array)
-    {
         free(buffer_info->lines_array);
-        buffer_info->lines_array = NULL;
-    }
+    buffer_info->lines_array = NULL;
 
     buffer_info = NULL;
 
@@ -109,6 +119,8 @@ void FreeFileInput(struct file_input* buffer_info)
 void GetFileInput(const char* file_name, struct file_input* buffer_info,
                   enum partition is_separated)
 {
+    assert(buffer_info);
+
     ReadFileToBuffer(file_name, buffer_info);
     GetNumberOfLines(buffer_info);
 
@@ -116,5 +128,6 @@ void GetFileInput(const char* file_name, struct file_input* buffer_info,
     {
         MakeArrayOfStrings(buffer_info);
     }
+
     return;
 }
