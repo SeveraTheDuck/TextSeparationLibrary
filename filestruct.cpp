@@ -76,20 +76,17 @@ void MakeArrayOfStrings(struct file_input* buffer_info)
 
     for (size_t buffer_index = 0; buffer_index < buffer_info->buffer_size; ++buffer_index)
     {
-        ++(buffer_info->lines_array[current_line - 1].number_of_elements);
+        ++buffer_info->lines_array[current_line - 1].number_of_elements;
         if (buffer_info->buffer[buffer_index] == '\n')
         {
             buffer_info->buffer[buffer_index] =  '\0';
             if (current_line < buffer_info->number_of_lines)
             {
-                --(buffer_info->lines_array[current_line - 1].number_of_elements);
+                --buffer_info->lines_array[current_line - 1].number_of_elements;
                 buffer_info->lines_array[current_line++].line = buffer_info->buffer + buffer_index + 1;
             }
         }
     }
-
-    --(buffer_info->lines_array[buffer_info->number_of_lines - 1].number_of_elements);
-
     return;
 }
 
