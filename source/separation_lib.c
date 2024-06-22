@@ -6,24 +6,70 @@
 // Static functions prototypes
 //-----------------------------------------------------------------------------
 
+/**
+ * @brief Reads file content into buffer, saves its length
+ *
+ * @param filename The name of the file to be read
+ *
+ * @retval Pointer to string_info structure with buffer and length
+ * @retval NULL if allocation error occurred
+ * @retval NULL if file not found
+ * @retval NULL if file is empty
+ */
 static string_info*
 ReadFile (const char* const filename);
 
 
+/**
+ * @brief Get file size in bytes
+ *
+ * @param file pointer to FILE structure
+ *
+ * @retval File size in bytes
+ */
 static size_t
 GetFileSize (FILE* const file);
 
 
+/**
+ * @brief Get number of strings separated by separator
+ *
+ * @param text Pointer to string_info structure to separate
+ * @param separator Separator character
+ *
+ * @retval Number of strings
+ */
 static size_t
 GetStringsNumber (string_info* const text,
                   const char separator);
 
 
+/**
+ * @brief Make array of strings separated by separator
+ *
+ * @param text Pointer to string to separate
+ * @param separator Separator character
+ * @param strings_num Number of strings
+ *
+ * @retval Array of strings
+ * @retval NULL if allocation error occured
+ */
 static string_info**
 MakeSeparation (string_info* const text,
                 const char separator,
                 const size_t strings_num);
 
+/**
+ * @brief Constructor for text_separation structure
+ *
+ * @param text Pointer to string with whole text
+ * @param separator Separation symbol
+ * @param strings_array Array of strings from the text
+ * @param strings_num Number of strings, separated by separator
+ *
+ * @retval Pointer to text_separation structure
+ * @retval NULL if allocation error occured
+ */
 static text_separation*
 TextSeparationConstructor (string_info* const text,
                            const char separator,
@@ -31,26 +77,69 @@ TextSeparationConstructor (string_info* const text,
                            const size_t strings_num);
 
 
+/**
+ * @brief Aborts separation if error occured
+ *
+ * @param text Pointer to string with whole text
+ * @param strings_array Array of strings from the text
+ * @param strings_num Number of strings
+ *
+ * @retval NULL
+ */
 static text_separation*
 AbortSeparation (string_info* const text,
                  string_info** const strings_array,
                  const size_t strings_num);
 
 
+/**
+ * @brief Destructor for whole text from file
+ *
+ * @param text Pointer to the string with text
+ *
+ * @retval NULL
+ */
 static string_info*
 BufferDestructor (string_info* const text);
 
 
+/**
+ * @brief Destructor for strings array
+ *
+ * @param strings_array Pointer to the strings array
+ * @param strings_num Number of strings
+ *
+ * @retval NULL
+ *
+ * @details Calls for destructor for every string and
+ * frees memory allocated for the array
+ */
 static string_info**
 StringsArrayDestructor (string_info** const strings_array,
                         const size_t strings_num);
 
 
+/**
+ * @brief Constructor for string_info structure
+ *
+ * @param begin_ptr Pointer to begining of the string
+ * @param chars_number Number of characters in the string
+ *
+ * @retval Pointer to the string_info structure
+ * @retval NULL if allocation error occured
+ */
 static string_info*
 StringInfoConstructor (char* const begin_ptr,
                        const size_t chars_number);
 
 
+/**
+ * @brief Destructor for the string_info structure
+ *
+ * @param string Pointer to the string
+ *
+ * @retval NULL
+ */
 static string_info*
 StringInfoDestructor (string_info* const string);
 
