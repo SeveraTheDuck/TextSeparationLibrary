@@ -2,6 +2,8 @@
 
 
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -18,7 +20,7 @@
 typedef
 struct string_info
 {
-    const char* begin_ptr;  ///< begin of string
+    char* begin_ptr;        ///< begin of string
     size_t chars_number;    ///< number of characters
 }
 string_info;
@@ -32,7 +34,7 @@ string_info;
 typedef
 struct text_separation
 {
-    char* text;                     ///< buffer with whole text
+    string_info* text;              ///< buffer with whole text
     char separator;                 ///< separator character
     string_info** strings_array;    ///< array of strings
     size_t strings_number;          ///< number of strings
@@ -73,6 +75,7 @@ typedef size_t separation_error_t;
  * @retval Pointer to the text_separation structure
  * @retval NULL if allocation error occured
  * @retval NULL if file open  error occured
+ * @retval NULL if file is empty
  *
  * @details This function opens file with name filename and makes an array
  * of strings
@@ -80,7 +83,7 @@ typedef size_t separation_error_t;
  * @note The strings are not guaranteed to be null terminated
  */
 text_separation*
-SeparateTextFile (const char* const restrict filename,
+SeparateTextFile (const char* const filename,
                   const char separator);
 
 /**
