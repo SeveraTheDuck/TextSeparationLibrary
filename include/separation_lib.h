@@ -1,3 +1,14 @@
+/**
+ * @file separation_lib.h
+ *
+ * @author SeveraTheDuck
+ *
+ * @brief The library to separate file into strings depending on taken
+ * function-separator
+ */
+
+
+
 #pragma once
 
 
@@ -27,7 +38,7 @@ string_info;
 
 
 /**
- * @brief Structure which contains text and its separation information
+ * @brief Structure which contains text and its separation
  *
  * @details String_info structures contain pointers to the text
  */
@@ -35,7 +46,6 @@ typedef
 struct text_separation
 {
     string_info* text;              ///< buffer with whole text
-    char separator;                 ///< separator character
     string_info** strings_array;    ///< array of strings
     size_t strings_number;          ///< number of strings
 }
@@ -57,6 +67,31 @@ enum separation_errors
  */
 typedef size_t separation_error_t;
 
+
+/**
+ * @brief Enumeration for separator function return values
+ */
+enum separator_function_status
+{
+    END_SEPARATION             = 0, ///< end separation, do not take char into string
+    SEPARATOR_ELEMENT_TAKE     = 1, ///< end string, take element into string
+    SEPARATOR_ELEMENT_NOT_TAKE = 2, ///< end string, do not take element into string
+    NOT_SEPARATOR_ELEMENT      = 3  ///< take element into string, continue string
+};
+
+
+/**
+ * @brief Separator function return type
+ */
+typedef size_t separator_function_status_t;
+
+
+/**
+ * @brief Separator function signature
+ */
+typedef
+separator_function_status_t (*sep_function) (char* const);
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
@@ -70,11 +105,12 @@ typedef size_t separation_error_t;
  * @brief Opens file and separates its text into strings, closes file
  *
  * @param filename Name of file to separate
- * @param separator Separation character
+ * @param separator Separator function
  *
  * @retval Pointer to the text_separation structure
  * @retval NULL if allocation error occured
  * @retval NULL if file open  error occured
+ * @retval NULL if separator function is NULL
  * @retval NULL if file is empty
  *
  * @details This function opens file with name filename and makes an array
@@ -84,7 +120,7 @@ typedef size_t separation_error_t;
  */
 text_separation*
 SeparateTextFile (const char* const filename,
-                  const char separator);
+                  sep_function separator);
 
 /**
  * @brief Destructor for text_separation structure
