@@ -35,20 +35,20 @@ GetFileSize (FILE* const file);
  * @brief Get number of strings separated by separator
  *
  * @param text Pointer to string_info structure to separate
- * @param separator Separator character
+ * @param separator Separator function
  *
  * @retval Number of strings
  */
 static size_t
 GetStringsNumber (string_info* const text,
-                  const char separator);
+                  sep_function separator);
 
 
 /**
  * @brief Make array of strings separated by separator
  *
  * @param text Pointer to string to separate
- * @param separator Separator character
+ * @param separator Separator function
  * @param strings_num Number of strings
  *
  * @retval Array of strings
@@ -56,14 +56,13 @@ GetStringsNumber (string_info* const text,
  */
 static string_info**
 MakeSeparation (string_info* const text,
-                const char separator,
+                sep_function separator,
                 const size_t strings_num);
 
 /**
  * @brief Constructor for text_separation structure
  *
  * @param text Pointer to string with whole text
- * @param separator Separation symbol
  * @param strings_array Array of strings from the text
  * @param strings_num Number of strings, separated by separator
  *
@@ -72,7 +71,6 @@ MakeSeparation (string_info* const text,
  */
 static text_separation*
 TextSeparationConstructor (string_info* const text,
-                           const char separator,
                            string_info** const strings_array,
                            const size_t strings_num);
 
@@ -153,8 +151,10 @@ StringInfoDestructor (string_info* const string);
 
 text_separation*
 SeparateTextFile (const char* const filename,
-                  const char separator)
+                  sep_function separator)
 {
+    if (separator == NULL) return NULL;
+
     text_separation* text_sep      = NULL;
     string_info*     buffer        = NULL;
     string_info**    strings_array = NULL;
@@ -170,8 +170,7 @@ SeparateTextFile (const char* const filename,
     if (strings_array == NULL)
         return AbortSeparation (buffer, strings_array, strings_num);
 
-    text_sep = TextSeparationConstructor (buffer, separator,
-                                          strings_array, strings_num);
+    text_sep = TextSeparationConstructor (buffer, strings_array, strings_num);
     if (text_sep == NULL)
         return AbortSeparation (buffer, strings_array, strings_num);
 
@@ -188,7 +187,6 @@ DestroySeparation (text_separation* const text_sep)
     text_sep->strings_array  = StringsArrayDestructor (text_sep->strings_array,
                                                        text_sep->strings_number);
     text_sep->strings_number = 0;
-    text_sep->separator      = '\0';
 
     free (text_sep);
     return NULL;
@@ -250,22 +248,30 @@ GetFileSize (FILE* const file)
 
 static size_t
 GetStringsNumber (string_info* const text,
-                  const char separator)
+                  sep_function separator)
 {
     assert (text);
+    assert (separator);
 
     const size_t char_num = text->chars_number;
-    const char* const buffer = text->begin_ptr;
+    char* const buffer = text->begin_ptr;
 
-    size_t strings_num = 1;
+    separator_function_status_t status      = END_SEPARATION;
+    separator_function_status_t prev_status = END_SEPARATION;
+
+    size_t strings_num = 0;
+
     for (size_t i = 0; i < char_num; ++i)
     {
-        if (buffer[i] == separator)
+        prev_status = status;
+        status = separator (buffer + i);
+
+        if (status == END_SEPARATION) break;
+
+        if (prev_status != NOT_SEPARATOR_ELEMENT &&
+            status      == NOT_SEPARATOR_ELEMENT)
             ++strings_num;
     }
-
-    if (char_num > 0 && buffer[char_num - 1] == separator)
-        --strings_num;
 
     return strings_num;
 }
@@ -273,10 +279,11 @@ GetStringsNumber (string_info* const text,
 
 static string_info**
 MakeSeparation (string_info* const text,
-                const char separator,
+                sep_function separator,
                 const size_t strings_num)
 {
     assert (text);
+    assert (separator);
 
     string_info** strings_array = calloc (strings_num, sizeof (string_info*));
     if (strings_array == NULL) return NULL;
@@ -286,23 +293,36 @@ MakeSeparation (string_info* const text,
 
     char*  cur_string_begin = buffer;
     size_t cur_string_index = 0;
-    size_t cur_string_size  = 1;
+    size_t cur_string_size  = 0;
+    separator_function_status_t status = END_SEPARATION;
 
     for (size_t i = 0; i < char_num; ++i)
     {
-        if (buffer[i] == separator || i + 1 == char_num)
+        status = separator (buffer + i);
+
+        switch (status)
         {
-            strings_array[cur_string_index] =
-                StringInfoConstructor (cur_string_begin, cur_string_size);
-            if (strings_array[cur_string_index] == NULL)
-                return StringsArrayDestructor (strings_array, strings_num);
+            case NOT_SEPARATOR_ELEMENT:
+                ++cur_string_size;
+                break;
 
-            ++cur_string_index;
-            cur_string_begin = buffer + i + 1;
-            cur_string_size  = 1;
+            case SEPARATOR_ELEMENT_TAKE:
+                ++cur_string_size;
+                /* [[fallthrough]]; */
+
+            case SEPARATOR_ELEMENT_NOT_TAKE:
+                if (cur_string_size == 0) break;
+
+                strings_array[cur_string_index] =
+                    StringInfoConstructor (cur_string_begin, cur_string_size);
+                ++cur_string_index;
+                cur_string_begin = buffer + i + 1;
+                cur_string_size  = 0;
+                break;
+
+            case END_SEPARATION:
+                return strings_array;
         }
-
-        else ++cur_string_size;
     }
 
     return strings_array;
@@ -311,7 +331,6 @@ MakeSeparation (string_info* const text,
 
 static text_separation*
 TextSeparationConstructor (string_info* const text,
-                           const char separator,
                            string_info** const strings_array,
                            const size_t strings_num)
 {
@@ -324,7 +343,6 @@ TextSeparationConstructor (string_info* const text,
     text_sep->text           = text;
     text_sep->strings_array  = strings_array;
     text_sep->strings_number = strings_num;
-    text_sep->separator      = separator;
 
     return text_sep;
 }
