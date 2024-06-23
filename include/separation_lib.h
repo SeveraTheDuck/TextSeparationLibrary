@@ -90,7 +90,7 @@ typedef size_t separator_function_status_t;
  * @brief Separator function signature
  */
 typedef
-separator_function_status_t (*sep_function) (char* const);
+separator_function_status_t (*sep_function) (const char* const);
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
